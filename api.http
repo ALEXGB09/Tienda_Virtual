@@ -4,7 +4,7 @@
 GET {{baseUrl}}/productos
 
 ### Obtener producto por ID
-GET {{baseUrl}}/productos/PROD001
+GET {{baseUrl}}/productos?id=PROD001
 
 ### Crear producto
 POST {{baseUrl}}/productos
@@ -21,16 +21,17 @@ Content-Type: application/json
 }
 
 ### Actualizar producto
-PUT {{baseUrl}}/productos/PROD010
+PUT {{baseUrl}}/productos?id=PROD010
 Content-Type: application/json
 
 {
+  "producto_id": "PROD010",
   "nombre": "Webcam HD Pro",
   "precio_base": 210000
 }
 
 ### Eliminar producto
-DELETE {{baseUrl}}/productos/PROD010
+DELETE {{baseUrl}}/productos?id=PROD010
 
 ### Listar stock
 GET {{baseUrl}}/stock
