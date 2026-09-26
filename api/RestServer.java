@@ -34,14 +34,12 @@ public class RestServer {
 
     public void start() {
         this.server.start();
-        System.out.println("=================================================");
         System.out.println("  Servicio de Tienda Virtual en puerto " + port);
         System.out.println("  Rutas disponibles:");
         System.out.println("    - Catalogo:  http://localhost:" + port + "/api/productos");
         System.out.println("    - Inventario: http://localhost:" + port + "/api/stock");
         System.out.println("    - Ventas:     http://localhost:" + port + "/api/ventas");
         System.out.println("    - Pedidos:    http://localhost:" + port + "/api/pedidos");
-        System.out.println("=================================================");
     }
 
     public void stop() {
