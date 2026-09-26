@@ -1,0 +1,51 @@
+@baseUrl = http://localhost:8080/api
+
+### Listar productos
+GET {{baseUrl}}/productos
+
+### Obtener producto por ID
+GET {{baseUrl}}/productos/PROD001
+
+### Crear producto
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "producto_id": "PROD010",
+  "nombre": "Webcam HD",
+  "descripcion": "1080p 60fps",
+  "precio_base": 180000,
+  "estado_activo": true,
+  "cantidad_inicial": 20,
+  "stock_minimo": 3
+}
+
+### Actualizar producto
+PUT {{baseUrl}}/productos/PROD010
+Content-Type: application/json
+
+{
+  "nombre": "Webcam HD Pro",
+  "precio_base": 210000
+}
+
+### Eliminar producto
+DELETE {{baseUrl}}/productos/PROD010
+
+### Listar stock
+GET {{baseUrl}}/stock
+
+### Listar pedidos
+GET {{baseUrl}}/pedidos
+
+### Registrar venta
+POST {{baseUrl}}/ventas
+Content-Type: application/json
+
+{
+  "cliente_id": "CLI001",
+  "direccion_envio": "Calle 100 # 15-30",
+  "detalles": [
+    { "producto_id": "PROD001", "cantidad": 2 }
+  ]
+}
