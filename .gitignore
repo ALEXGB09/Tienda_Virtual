@@ -1,0 +1,25 @@
+# Compilados Java
+*.class
+bin/
+out/
+build/
+target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Base de datos local
+*.db
+*.sqlite
