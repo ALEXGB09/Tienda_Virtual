@@ -1,0 +1,51 @@
+DROP TABLE IF EXISTS DETALLE_PEDIDO;
+DROP TABLE IF EXISTS PEDIDO;
+DROP TABLE IF EXISTS CLIENTE;
+DROP TABLE IF EXISTS STOCK;
+DROP TABLE IF EXISTS PRODUCTO;
+
+CREATE TABLE PRODUCTO (
+    producto_id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    precio_base DECIMAL(12,2) NOT NULL,
+    estado_activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE STOCK (
+    stock_id VARCHAR(50) PRIMARY KEY,
+    producto_id VARCHAR(50) UNIQUE NOT NULL,
+    cantidad_disponible INT NOT NULL DEFAULT 0,
+    stock_minimo INT NOT NULL DEFAULT 0,
+    ultima_actualizacion VARCHAR(50),
+    FOREIGN KEY (producto_id) REFERENCES PRODUCTO(producto_id) ON DELETE CASCADE
+);
+
+CREATE TABLE CLIENTE (
+    cliente_id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    fecha_registro VARCHAR(50)
+);
+
+CREATE TABLE PEDIDO (
+    pedido_id VARCHAR(50) PRIMARY KEY,
+    cliente_id VARCHAR(50) NOT NULL,
+    direccion_envio VARCHAR(255) NOT NULL,
+    fecha_pedido VARCHAR(50) NOT NULL,
+    monto_total DECIMAL(12,2) NOT NULL,
+    estado VARCHAR(50) NOT NULL DEFAULT 'COMPLETADO',
+    FOREIGN KEY (cliente_id) REFERENCES CLIENTE(cliente_id)
+);
+
+CREATE TABLE DETALLE_PEDIDO (
+    detalle_id VARCHAR(50) PRIMARY KEY,
+    pedido_id VARCHAR(50) NOT NULL,
+    producto_id VARCHAR(50) NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (pedido_id) REFERENCES PEDIDO(pedido_id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES PRODUCTO(producto_id)
+);
