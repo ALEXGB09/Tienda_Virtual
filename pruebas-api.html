@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda Virtual - Pruebas API</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+header {
+  background: #17324d;
+  color: white;
+  padding: 25px;
+  text-align: center;
+}
+header h1 { margin: 0 0 8px; }
+header p { margin: 0; color: #dbeafe; }
+main {
+  max-width: 1100px;
+  margin: 25px auto;
+  padding: 0 16px 30px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #dbe3ec;
+  box-shadow: 0 3px 10px #0000000a;
+}
+h2 { font-size: 19px; margin-top: 0; }
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: bold;
+}
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+}
+textarea {
+  min-height: 200px;
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+button {
+  border: 0;
+  border-radius: 6px;
+  background: #1769aa;
+  color: white;
+  padding: 10px 12px;
+  margin: 5px 4px 2px 0;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { filter: brightness(.9); }
+.secondary { background: #526579; }
+.danger { background: #b83232; }
+.buttons { margin-top: 12px; }
+#status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #e2e8f0;
+  font-weight: bold;
+}
+#output {
+  background: #111827;
+  color: #e5edf7;
+  border-radius: 8px;
+  padding: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: auto;
+  min-height: 130px;
+  max-height: 450px;
+}
+.note { color: #64748b; font-size: 14px; line-height: 1.5; }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>🛒 Tienda Virtual</h1>
+  <p>Panel de pruebas de la API REST</p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <section class="card">
+      <h2>1. Catálogo de productos</h2>
+
+      <label for="base">Dirección de la API</label>
+      <input id="base" value="http://localhost:8080/api">
+
+      <label for="id">ID del producto</label>
+      <input id="id" value="PROD001">
+
+      <div class="buttons">
+        <button onclick="listarProductos()">GET · Listar</button>
+        <button class="secondary" onclick="buscarProducto()">GET · Buscar por ID</button>
+      </div>
+
+      <p class="note">El ID se utiliza para consultar, actualizar y eliminar productos.</p>
+    </section>
+
+    <section class="card">
+      <h2>2. Crear, actualizar y eliminar</h2>
+
+      <label for="producto">Datos del producto (JSON)</label>
+      <textarea id="producto">{
+  "producto_id": "PROD010",
+  "nombre": "Webcam HD",
+  "descripcion": "1080p 60fps",
+  "precio_base": 180000,
+  "estado_activo": true,
+  "cantidad_inicial": 20,
+  "stock_minimo": 3
+}</textarea>
+
+      <div class="buttons">
+        <button onclick="crearProducto()">POST · Crear</button>
+        <button onclick="actualizarProducto()">PUT · Actualizar</button>
+        <button class="danger" onclick="eliminarProducto()">DELETE · Eliminar</button>
+      </div>
+
+      <p class="note">Para actualizar, escribe el ID correspondiente en el campo de la sección anterior.</p>
+    </section>
+
+    <section class="card">
+      <h2>3. Inventario y pedidos</h2>
+      <p class="note">Consulta los datos que devuelve el servidor.</p>
+
+      <button onclick="solicitar('GET','/stock')">GET · Inventario</button>
+      <button onclick="solicitar('GET','/pedidos')">GET · Pedidos</button>
+      <button onclick="solicitar('GET','/ventas')">GET · Ventas</button>
+    </section>
+
+    <section class="card">
+      <h2>4. Registrar una venta</h2>
+
+      <label for="cliente">ID del cliente</label>
+      <input id="cliente" value="CLI001">
+
+      <label for="direccion">Dirección de envío</label>
+      <input id="direccion" value="Calle 100 # 15-30">
+
+      <label for="productoVenta">ID del producto</label>
+      <input id="productoVenta" value="PROD001">
+
+      <label for="cantidad">Cantidad</label>
+      <input id="cantidad" type="number" min="1" value="1">
+
+      <button onclick="registrarVenta()">POST · Registrar venta</button>
+    </section>
+
+  </div>
+
+  <section class="card" style="margin-top:18px">
+    <h2>5. Respuesta del servidor</h2>
+    <p>Estado HTTP: <span id="status">Esperando solicitud</span></p>
+    <pre id="output">Selecciona uno de los botones para comenzar a probar la API.</pre>
+    <button class="secondary" onclick="limpiar()">Limpiar respuesta</button>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function baseURL() {
+  return $('base').value.trim().replace(/\/+$/, '');
+}
+
+function mostrar(estado, contenido) {
+  $('status').textContent = estado;
+  $('output').textContent = contenido;
+}
+
+async function solicitar(metodo, ruta, datos = undefined) {
+  const url = baseURL() + ruta;
+  const opciones = {
+    method: metodo,
+    headers: { 'Accept': 'application/json' }
+  };
+
+  if (datos !== undefined) {
+    opciones.headers['Content-Type'] = 'application/json';
+    opciones.body = JSON.stringify(datos);
+  }
+
+  mostrar('Enviando...', metodo + ' ' + url);
+
+  try {
+    const respuesta = await fetch(url, opciones);
+    const texto = await respuesta.text();
+    let contenido = texto;
+
+    try {
+      contenido = JSON.stringify(JSON.parse(texto), null, 2);
+    } catch (_) {}
+
+    mostrar(
+      respuesta.status + ' ' + respuesta.statusText,
+      metodo + ' ' + url + '\n\n' +
+      (contenido || '(El servidor no devolvió contenido)')
+    );
+  } catch (error) {
+    mostrar(
+      'Error de conexión',
+      error.message +
+      '\n\nComprueba que la aplicación Java esté ejecutándose.' +
+      '\nSi la API está activa, revisa también la configuración CORS.'
+    );
+  }
+}
+
+function leerJSON() {
+  try {
+    return JSON.parse($('producto').value);
+  } catch (error) {
+    mostrar('JSON inválido', 'Revisa los datos del producto: ' + error.message);
+    return null;
+  }
+}
+
+function listarProductos() {
+  solicitar('GET', '/productos');
+}
+
+function buscarProducto() {
+  const id = $('id').value.trim();
+  if (!id) {
+    mostrar('Falta el ID', 'Escribe un ID de producto.');
+    return;
+  }
+  solicitar('GET', '/productos?id=' + encodeURIComponent(id));
+}
+
+function crearProducto() {
+  const datos = leerJSON();
+  if (datos) solicitar('POST', '/productos', datos);
+}
+
+function actualizarProducto() {
+  const id = $('id').value.trim();
+  const datos = leerJSON();
+
+  if (!id) {
+    mostrar('Falta el ID', 'Escribe el ID del producto que quieres actualizar.');
+    return;
+  }
+  if (datos) {
+    solicitar('PUT', '/productos?id=' + encodeURIComponent(id), datos);
+  }
+}
+
+function eliminarProducto() {
+  const id = $('id').value.trim();
+
+  if (!id) {
+    mostrar('Falta el ID', 'Escribe el ID del producto que quieres eliminar.');
+    return;
+  }
+
+  if (confirm('¿Seguro que deseas eliminar el producto ' + id + '?')) {
+    solicitar('DELETE', '/productos?id=' + encodeURIComponent(id));
+  }
+}
+
+function registrarVenta() {
+  const cantidad = Number($('cantidad').value);
+
+  if (!Number.isInteger(cantidad) || cantidad < 1) {
+    mostrar('Cantidad inválida', 'Escribe una cantidad entera mayor que cero.');
+    return;
+  }
+
+  solicitar('POST', '/ventas', {
+    cliente_id: $('cliente').value.trim(),
+    direccion_envio: $('direccion').value.trim(),
+    detalles: [{
+      producto_id: $('productoVenta').value.trim(),
+      cantidad: cantidad
+    }]
+  });
+}
+
+function limpiar() {
+  mostrar('Esperando solicitud', 'Selecciona uno de los botones para comenzar a probar la API.');
+}
+</script>
+</body>
+</html>
