@@ -12,7 +12,11 @@ import data_access.dao.ClienteDAO;
 import data_access.dao.PedidoDAO;
 import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
+import data_access.impl.ClienteDAOJdbc;
 import data_access.impl.MemoryDAOFactory;
+import data_access.impl.PedidoDAOJdbc;
+import data_access.impl.ProductoDAOJdbc;
+import data_access.impl.StockDAOJdbc;
 import model.Cliente;
 import model.DetallePedido;
 import model.Pedido;
@@ -35,10 +39,10 @@ public class VistaMain {
 
     public static void main(String[] args) {
         try {
-            productoDAO = MemoryDAOFactory.getProductoDAO();
-            stockDAO = MemoryDAOFactory.getStockDAO();
-            clienteDAO = MemoryDAOFactory.getClienteDAO();
-            pedidoDAO = MemoryDAOFactory.getPedidoDAO();
+            productoDAO = new ProductoDAOJdbc();
+            stockDAO = new StockDAOJdbc();
+            clienteDAO = new ClienteDAOJdbc();
+            pedidoDAO = new PedidoDAOJdbc();
 
             productoController = new ProductoController(productoDAO, stockDAO);
             stockController = new StockController(stockDAO);
