@@ -1,0 +1,589 @@
+openapi: 3.0.3
+info:
+  title: API Tienda Virtual
+  description: >
+    API REST para la gestión de productos, inventario, clientes, pedidos y ventas
+    con persistencia JDBC, control transaccional y separación por capas (SOLID).
+  version: 1.0.0
+  contact:
+    name: Equipo Tienda Virtual
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+
+paths:
+  /api/productos:
+    get:
+      summary: Listar o buscar productos
+      description: Retorna el catálogo completo de productos o un producto específico si se envía el parámetro `id`.
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID único del producto a buscar
+          schema:
+            type: string
+            example: PROD001
+      responses:
+        '200':
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Producto'
+                  - $ref: '#/components/schemas/Producto'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crear un nuevo producto
+      description: Registra un producto en el catálogo e inicializa su inventario en la tabla STOCK.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoCreateRequest'
+      responses:
+        '201':
+          description: Producto creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '400':
+          description: Datos de entrada inválidos o faltantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto, el ID de producto ya existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualizar un producto existente
+      description: Actualiza nombre, descripción, precio o estado activo del producto.
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID del producto a actualizar (también puede enviarse en el cuerpo)
+          schema:
+            type: string
+            example: PROD010
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoUpdateRequest'
+      responses:
+        '200':
+          description: Producto actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeResponse'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Eliminar un producto
+      description: Elimina un producto y su inventario asociado.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: ID del producto a eliminar
+          schema:
+            type: string
+            example: PROD010
+      responses:
+        '200':
+          description: Producto eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeResponse'
+        '400':
+          description: Falta el parámetro ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/stock:
+    get:
+      summary: Consultar inventario
+      description: Retorna el inventario de todos los productos o de un producto específico mediante `productoId`.
+      parameters:
+        - name: productoId
+          in: query
+          required: false
+          description: ID del producto a consultar
+          schema:
+            type: string
+            example: PROD001
+      responses:
+        '200':
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Stock'
+                  - $ref: '#/components/schemas/Stock'
+        '404':
+          description: Inventario no encontrado para el producto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualizar cantidad de inventario
+      description: Modifica directamente la cantidad disponible de un producto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockUpdateRequest'
+      responses:
+        '200':
+          description: Inventario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MensajeResponse'
+        '400':
+          description: Datos inválidos o cantidad negativa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto o inventario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/clientes:
+    get:
+      summary: Listar o consultar clientes
+      description: Retorna la lista de todos los clientes registrados o uno por ID.
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID del cliente a buscar
+          schema:
+            type: string
+            example: CLI001
+      responses:
+        '200':
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Cliente'
+                  - $ref: '#/components/schemas/Cliente'
+        '404':
+          description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Registrar nuevo cliente
+      description: Registra un cliente con validación de campos obligatorios y formato de email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClienteCreateRequest'
+      responses:
+        '201':
+          description: Cliente registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cliente'
+        '400':
+          description: Datos incompletos o email inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto, el ID o email del cliente ya existen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/pedidos:
+    get:
+      summary: Consultar pedidos
+      description: Retorna la lista de todos los pedidos registrados o un pedido con sus detalles por ID.
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID del pedido
+          schema:
+            type: string
+            example: PED_1729000000000
+      responses:
+        '200':
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Pedido'
+                  - $ref: '#/components/schemas/Pedido'
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/ventas:
+    get:
+      summary: Historial de ventas
+      description: Retorna la lista de pedidos/ventas efectuadas.
+      responses:
+        '200':
+          description: Lista de ventas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+    post:
+      summary: Registrar una venta (Checkout transaccional)
+      description: >
+        Procesa una venta: valida que el cliente exista, que los productos estén activos,
+        que haya inventario suficiente, calcula los importes totales, persiste el pedido con sus detalles
+        y descuenta el inventario dentro de una sola transacción atómica con soporte de rollback ante errores.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VentaRequest'
+      responses:
+        '201':
+          description: Venta registrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+        '400':
+          description: Datos de venta inválidos (ej. cantidad no positiva o ítem sin producto_id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cliente o producto inexistente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto de inventario (stock insuficiente) o producto inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Producto:
+      type: object
+      properties:
+        producto_id:
+          type: string
+          example: PROD001
+        nombre:
+          type: string
+          example: Laptop Gaming Pro 15
+        descripcion:
+          type: string
+          example: Intel i7 16GB RAM 512GB SSD
+        precio_base:
+          type: number
+          format: double
+          example: 4500000.00
+        estado_activo:
+          type: boolean
+          example: true
+
+    ProductoCreateRequest:
+      type: object
+      required:
+        - producto_id
+        - nombre
+        - precio_base
+      properties:
+        producto_id:
+          type: string
+          example: PROD010
+        nombre:
+          type: string
+          example: Webcam HD Pro
+        descripcion:
+          type: string
+          example: 1080p 60fps con micrófono estéreo
+        precio_base:
+          type: number
+          format: double
+          example: 180000.00
+        estado_activo:
+          type: boolean
+          default: true
+          example: true
+        cantidad_inicial:
+          type: integer
+          default: 10
+          example: 20
+        stock_minimo:
+          type: integer
+          default: 2
+          example: 3
+
+    ProductoUpdateRequest:
+      type: object
+      properties:
+        producto_id:
+          type: string
+          example: PROD010
+        nombre:
+          type: string
+          example: Webcam HD Pro Max
+        descripcion:
+          type: string
+          example: 4K 60fps con autofocus
+        precio_base:
+          type: number
+          format: double
+          example: 210000.00
+        estado_activo:
+          type: boolean
+          example: true
+
+    Stock:
+      type: object
+      properties:
+        stock_id:
+          type: string
+          example: STK001
+        producto_id:
+          type: string
+          example: PROD001
+        cantidad_disponible:
+          type: integer
+          example: 10
+        stock_minimo:
+          type: integer
+          example: 2
+        ultima_actualizacion:
+          type: string
+          example: "2026-10-17T18:00:00"
+
+    StockUpdateRequest:
+      type: object
+      required:
+        - producto_id
+        - cantidad
+      properties:
+        producto_id:
+          type: string
+          example: PROD001
+        cantidad:
+          type: integer
+          example: 25
+
+    Cliente:
+      type: object
+      properties:
+        cliente_id:
+          type: string
+          example: CLI001
+        nombre:
+          type: string
+          example: Alexis
+        apellido:
+          type: string
+          example: Giraldo
+        email:
+          type: string
+          example: alexis.giraldo@email.com
+        telefono:
+          type: string
+          example: "+573001234567"
+        fecha_registro:
+          type: string
+          example: "2026-01-15"
+
+    ClienteCreateRequest:
+      type: object
+      required:
+        - cliente_id
+        - nombre
+        - apellido
+        - email
+      properties:
+        cliente_id:
+          type: string
+          example: CLI003
+        nombre:
+          type: string
+          example: Carlos
+        apellido:
+          type: string
+          example: Ramirez
+        email:
+          type: string
+          example: carlos.ramirez@email.com
+        telefono:
+          type: string
+          example: "+573201112233"
+
+    DetallePedido:
+      type: object
+      properties:
+        detalle_id:
+          type: string
+          example: DET_PED_1729000000000_1
+        pedido_id:
+          type: string
+          example: PED_1729000000000
+        producto_id:
+          type: string
+          example: PROD001
+        cantidad:
+          type: integer
+          example: 2
+        precio_unitario:
+          type: number
+          format: double
+          example: 4500000.00
+
+    Pedido:
+      type: object
+      properties:
+        pedido_id:
+          type: string
+          example: PED_1729000000000
+        cliente_id:
+          type: string
+          example: CLI001
+        direccion_envio:
+          type: string
+          example: Calle 100 # 15-30, Bogota
+        fecha_pedido:
+          type: string
+          example: "2026-10-17T18:00:00"
+        monto_total:
+          type: number
+          format: double
+          example: 9000000.00
+        estado:
+          type: string
+          example: COMPLETADO
+        detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetallePedido'
+
+    DetalleVentaItem:
+      type: object
+      required:
+        - producto_id
+        - cantidad
+      properties:
+        producto_id:
+          type: string
+          example: PROD001
+        cantidad:
+          type: integer
+          example: 2
+
+    VentaRequest:
+      type: object
+      required:
+        - cliente_id
+      properties:
+        cliente_id:
+          type: string
+          example: CLI001
+        direccion_envio:
+          type: string
+          example: Calle 100 # 15-30, Bogota
+        producto_id:
+          type: string
+          description: Opcional si se utiliza el formato simple de un solo producto
+          example: PROD001
+        cantidad:
+          type: integer
+          description: Opcional si se utiliza el formato simple de un solo producto
+          example: 1
+        detalles:
+          type: array
+          description: Lista de productos y cantidades a comprar
+          items:
+            $ref: '#/components/schemas/DetalleVentaItem'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Recurso no encontrado
+        status:
+          type: integer
+          example: 404
+
+    MensajeResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Operación ejecutada exitosamente
