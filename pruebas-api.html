@@ -141,16 +141,39 @@ button:hover { filter: brightness(.9); }
     </section>
 
     <section class="card">
-      <h2>3. Inventario y pedidos</h2>
+      <h2>3. Inventario, clientes y pedidos</h2>
       <p class="note">Consulta los datos que devuelve el servidor.</p>
 
       <button onclick="solicitar('GET','/stock')">GET · Inventario</button>
+      <button onclick="solicitar('GET','/clientes')">GET · Clientes</button>
       <button onclick="solicitar('GET','/pedidos')">GET · Pedidos</button>
       <button onclick="solicitar('GET','/ventas')">GET · Ventas</button>
+      <button class="secondary" onclick="window.open(baseURL().replace('/api','') + '/swagger','_blank')">📖 Ver Swagger UI</button>
     </section>
 
     <section class="card">
-      <h2>4. Registrar una venta</h2>
+      <h2>4. Gestión de Clientes</h2>
+      <label for="clienteIdConsulta">ID del cliente</label>
+      <input id="clienteIdConsulta" value="CLI001">
+      <div class="buttons">
+        <button onclick="buscarCliente()">GET · Buscar Cliente</button>
+      </div>
+
+      <label for="nuevoClienteJson">Registrar nuevo cliente (JSON)</label>
+      <textarea id="nuevoClienteJson" style="min-height: 120px;">{
+  "cliente_id": "CLI003",
+  "nombre": "Carlos",
+  "apellido": "Ramirez",
+  "email": "carlos.ramirez@email.com",
+  "telefono": "+573201112233"
+}</textarea>
+      <div class="buttons">
+        <button onclick="crearCliente()">POST · Registrar Cliente</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5. Registrar una venta</h2>
 
       <label for="cliente">ID del cliente</label>
       <input id="cliente" value="CLI001">
@@ -170,7 +193,7 @@ button:hover { filter: brightness(.9); }
   </div>
 
   <section class="card" style="margin-top:18px">
-    <h2>5. Respuesta del servidor</h2>
+    <h2>6. Respuesta del servidor</h2>
     <p>Estado HTTP: <span id="status">Esperando solicitud</span></p>
     <pre id="output">Selecciona uno de los botones para comenzar a probar la API.</pre>
     <button class="secondary" onclick="limpiar()">Limpiar respuesta</button>
@@ -277,6 +300,24 @@ function eliminarProducto() {
 
   if (confirm('¿Seguro que deseas eliminar el producto ' + id + '?')) {
     solicitar('DELETE', '/productos?id=' + encodeURIComponent(id));
+  }
+}
+
+function buscarCliente() {
+  const id = $('clienteIdConsulta').value.trim();
+  if (!id) {
+    mostrar('Falta el ID', 'Escribe un ID de cliente.');
+    return;
+  }
+  solicitar('GET', '/clientes?id=' + encodeURIComponent(id));
+}
+
+function crearCliente() {
+  try {
+    const datos = JSON.parse($('nuevoClienteJson').value);
+    solicitar('POST', '/clientes', datos);
+  } catch (error) {
+    mostrar('JSON inválido', 'Revisa los datos del cliente: ' + error.message);
   }
 }
 

@@ -1,69 +1,77 @@
 package api;
 
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+
 import controller.StockController;
+import exception.ValidationException;
 import model.Stock;
 
-public class StockHandler implements HttpHandler {
-    private StockController stockController;
+public class StockHandler extends BaseHandler {
+
+    private final StockController stockController;
 
     public StockHandler(StockController stockController) {
         this.stockController = stockController;
     }
 
     @Override
-    public void handle(HttpExchange exchange) {
-        try {
-            String method = exchange.getRequestMethod();
-            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-            exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+    protected void doHandle(HttpExchange exchange, String method) throws Exception {
+        Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getRawQuery());
+        String prodIdParam = queryParams.get("producto_id");
+        if (prodIdParam == null) {
+            prodIdParam = queryParams.get("productoId");
+        }
 
-            if ("GET".equalsIgnoreCase(method)) {
-                List<Stock> stockList = stockController.listarStock();
-                sendResponse(exchange, 200, JsonUtils.toJsonStocks(stockList));
-            } else if ("PUT".equalsIgnoreCase(method)) {
-                InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-                StringBuilder sb = new StringBuilder();
-                char[] buf = new char[1024];
-                int len;
-                while ((len = reader.read(buf)) > 0) {
-                    sb.append(buf, 0, len);
+        switch (method) {
+            case "GET":
+                if (prodIdParam != null && !prodIdParam.trim().isEmpty()) {
+                    Stock stock = stockController.buscarPorProductoId(prodIdParam);
+                    sendJson(exchange, 200, stock);
+                } else {
+                    List<Stock> list = stockController.listarStock();
+                    sendJson(exchange, 200, list);
                 }
-                reader.close();
+                break;
 
-                Map<String, String> map = JsonUtils.parseJsonSimple(sb.toString());
-                String productoId = map.get("producto_id");
-                int cantidad = Integer.parseInt(map.get("cantidad"));
+            case "PUT": {
+                String body = readBody(exchange);
+                JsonNode json = JsonUtils.parseTree(body);
+
+                String productoId = json.hasNonNull("producto_id")
+                        ? json.get("producto_id").asText().trim()
+                        : prodIdParam;
+
+                if (productoId == null || productoId.isEmpty()) {
+                    throw new ValidationException("El campo 'producto_id' es obligatorio.");
+                }
+
+                if (!json.hasNonNull("cantidad")) {
+                    throw new ValidationException("El campo 'cantidad' es obligatorio.");
+                }
+
+                int cantidad = json.get("cantidad").asInt();
+                if (cantidad < 0) {
+                    throw new ValidationException("La cantidad no puede ser negativa.");
+                }
 
                 stockController.actualizarCantidad(productoId, cantidad);
-                sendResponse(exchange, 200, JsonUtils.toJsonMessage("mensaje", "Stock de " + productoId + " actualizado a " + cantidad));
-            } else {
-                sendError(exchange, 405, "Método HTTP no permitido.");
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("mensaje", "Stock de " + productoId + " actualizado a " + cantidad);
+                response.put("producto_id", productoId);
+                response.put("cantidad", cantidad);
+                sendJson(exchange, 200, response);
+                break;
             }
-        } catch (Exception e) {
-            sendError(exchange, 500, e.getMessage());
-        }
-    }
 
-    private void sendResponse(HttpExchange exchange, int status, String jsonResponse) {
-        try {
-            byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(status, bytes.length);
-            OutputStream os = exchange.getResponseBody();
-            os.write(bytes);
-            os.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            default:
+                exchange.getResponseHeaders().set("Allow", "GET, PUT, OPTIONS");
+                sendError(exchange, 405, "Método HTTP " + method + " no permitido en /api/stock.");
         }
-    }
-
-    private void sendError(HttpExchange exchange, int status, String message) {
-        sendResponse(exchange, status, JsonUtils.toJsonMessage("error", message));
     }
 }
