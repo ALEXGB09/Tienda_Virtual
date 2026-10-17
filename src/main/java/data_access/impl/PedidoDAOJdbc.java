@@ -104,6 +104,30 @@ public class PedidoDAOJdbc implements PedidoDAO {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
+        // Descontar existencias dentro de la misma transacción.
+        String sqlDescontar = """
+            UPDATE STOCK
+            SET cantidad_disponible = cantidad_disponible - ?,
+                ultima_actualizacion = ?
+            WHERE producto_id = ?
+                AND cantidad_disponible >= ?
+            """;
+
+        try (PreparedStatement stmtStock = conn.prepareStatement(sqlDescontar)) {
+                for (DetallePedido d : p.getDetalles()) {
+                    stmtStock.setInt(1, d.getCantidad());
+                    stmtStock.setString(2, p.getFecha_pedido());
+                    stmtStock.setString(3, d.getProducto_id());
+                    stmtStock.setInt(4, d.getCantidad());
+
+                    if (stmtStock.executeUpdate() == 0) {
+                        throw new Exception(
+                            "Inventario insuficiente o producto inexistente: "
+                            + d.getProducto_id()
+                        );
+                    }
+                }
+            }
 
             try (PreparedStatement stmtP = conn.prepareStatement(sqlInsertPedido)) {
                 stmtP.setString(1, p.getPedido_id());

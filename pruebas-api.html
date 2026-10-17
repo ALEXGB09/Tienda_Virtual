@@ -280,23 +280,31 @@ function eliminarProducto() {
   }
 }
 
+
 function registrarVenta() {
   const cantidad = Number($('cantidad').value);
+  const clienteId = $('cliente').value.trim();
+  const direccion = $('direccion').value.trim();
+  const productoId = $('productoVenta').value.trim();
 
   if (!Number.isInteger(cantidad) || cantidad < 1) {
     mostrar('Cantidad inválida', 'Escribe una cantidad entera mayor que cero.');
     return;
   }
 
+  if (!clienteId || !productoId) {
+    mostrar('Datos incompletos', 'Selecciona un cliente y un producto.');
+    return;
+  }
+
   solicitar('POST', '/ventas', {
-    cliente_id: $('cliente').value.trim(),
-    direccion_envio: $('direccion').value.trim(),
-    detalles: [{
-      producto_id: $('productoVenta').value.trim(),
-      cantidad: cantidad
-    }]
+    cliente_id: clienteId,
+    direccion_envio: direccion,
+    producto_id: productoId,
+    cantidad: cantidad
   });
 }
+
 
 function limpiar() {
   mostrar('Esperando solicitud', 'Selecciona uno de los botones para comenzar a probar la API.');
