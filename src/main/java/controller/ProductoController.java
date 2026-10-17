@@ -11,12 +11,14 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
+    public ProductoController(ProductoService productoService) {
+        this.productoService = productoService;
+    }
+
     public ProductoController(
             ProductoDAO productoDAO, StockDAO stockDAO
     ) {
-        this.productoService = new ProductoService(
-                productoDAO, stockDAO
-        );
+        this(new ProductoService(productoDAO, stockDAO));
     }
 
     public List<Producto> listarProductos() throws Exception {

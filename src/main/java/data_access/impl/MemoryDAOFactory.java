@@ -7,6 +7,7 @@ import data_access.dao.PedidoDAO;
 import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
 import model.Cliente;
+import model.DetallePedido;
 import model.Pedido;
 import model.Producto;
 import model.Stock;
@@ -144,7 +145,59 @@ public class MemoryDAOFactory {
             }
 
             @Override
-            public boolean insertarPedidoConDetalles(Pedido p) { pedidosDB.add(p); return true; }
+            public boolean insertarPedidoConDetalles(Pedido p) throws Exception {
+                synchronized (MemoryDAOFactory.class) {
+                    // 1. Validar que todos los items existan y tengan stock suficiente
+                    for (DetallePedido d : p.getDetalles()) {
+                        Stock s = null;
+                        for (Stock stock : stockDB) {
+                            if (stock.getProducto_id().equalsIgnoreCase(d.getProducto_id())) {
+                                s = stock;
+                                break;
+                            }
+                        }
+                        if (s == null || s.getCantidad_disponible() < d.getCantidad()) {
+                            throw new Exception("Inventario insuficiente o producto inexistente: " + d.getProducto_id());
+                        }
+                    }
+
+                    // 2. Descontar stock
+                    String now = p.getFecha_pedido();
+                    for (DetallePedido d : p.getDetalles()) {
+                        for (Stock stock : stockDB) {
+                            if (stock.getProducto_id().equalsIgnoreCase(d.getProducto_id())) {
+                                stock.setCantidad_disponible(stock.getCantidad_disponible() - d.getCantidad());
+                                stock.setUltima_actualizacion(now);
+                                break;
+                            }
+                        }
+                    }
+
+                    // 3. Registrar pedido
+                    pedidosDB.add(p);
+                    return true;
+                }
+            }
         };
+    }
+
+    public static synchronized void reiniciarDatos() {
+        productosDB.clear();
+        stockDB.clear();
+        clientesDB.clear();
+        pedidosDB.clear();
+
+        productosDB.add(new Producto("PROD001", "Laptop Gaming Pro 15", "Computador portátil Intel i7 16GB RAM 512GB SSD", 4500000.0, true));
+        productosDB.add(new Producto("PROD002", "Mouse Inalámbrico Ergonómico", "Mouse óptico recargable Bluetooth 2.4GHz", 120000.0, true));
+        productosDB.add(new Producto("PROD003", "Teclado Mecánico RGB", "Teclado gamer switches blue retroiluminado", 250000.0, true));
+        productosDB.add(new Producto("PROD004", "Monitor 27 Pulgadas 144Hz", "Monitor IPS Full HD respuesta 1ms", 1100000.0, true));
+
+        stockDB.add(new Stock("STK001", "PROD001", 10, 2, "2026-09-25T10:00:00"));
+        stockDB.add(new Stock("STK002", "PROD002", 50, 5, "2026-09-25T10:00:00"));
+        stockDB.add(new Stock("STK003", "PROD003", 30, 3, "2026-09-25T10:00:00"));
+        stockDB.add(new Stock("STK004", "PROD004", 15, 2, "2026-09-25T10:00:00"));
+
+        clientesDB.add(new Cliente("CLI001", "Alexis", "Giraldo", "alexis.giraldo@email.com", "+573001234567", "2026-01-15"));
+        clientesDB.add(new Cliente("CLI002", "Maria", "Lopez", "maria.lopez@email.com", "+573109876543", "2026-02-20"));
     }
 }
