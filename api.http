@@ -1,5 +1,9 @@
 @baseUrl = http://localhost:8080/api
 
+### ==========================================
+### PRODUCTOS
+### ==========================================
+
 ### Listar productos
 GET {{baseUrl}}/productos
 
@@ -13,7 +17,7 @@ Content-Type: application/json
 {
   "producto_id": "PROD010",
   "nombre": "Webcam HD",
-  "descripcion": "1080p 60fps",
+  "descripcion": "1080p 60fps con micrófono estéreo",
   "precio_base": 180000,
   "estado_activo": true,
   "cantidad_inicial": 20,
@@ -33,20 +37,83 @@ Content-Type: application/json
 ### Eliminar producto
 DELETE {{baseUrl}}/productos?id=PROD010
 
+
+### ==========================================
+### INVENTARIO (STOCK)
+### ==========================================
+
 ### Listar stock
 GET {{baseUrl}}/stock
 
-### Listar pedidos
+### Consultar stock por producto
+GET {{baseUrl}}/stock?productoId=PROD001
+
+### Actualizar stock
+PUT {{baseUrl}}/stock
+Content-Type: application/json
+
+{
+  "producto_id": "PROD001",
+  "cantidad": 25
+}
+
+
+### ==========================================
+### CLIENTES
+### ==========================================
+
+### Listar clientes
+GET {{baseUrl}}/clientes
+
+### Buscar cliente por ID
+GET {{baseUrl}}/clientes?id=CLI001
+
+### Registrar cliente
+POST {{baseUrl}}/clientes
+Content-Type: application/json
+
+{
+  "cliente_id": "CLI003",
+  "nombre": "Carlos",
+  "apellido": "Ramirez",
+  "email": "carlos.ramirez@email.com",
+  "telefono": "+573201112233"
+}
+
+
+### ==========================================
+### PEDIDOS Y VENTAS
+### ==========================================
+
+### Listar todos los pedidos
 GET {{baseUrl}}/pedidos
 
-### Registrar venta
+### Consultar pedido específico por ID
+GET {{baseUrl}}/pedidos?id=PED_1729000000000
+
+### Listar historial de ventas
+GET {{baseUrl}}/ventas
+
+### Registrar venta (con array de detalles)
 POST {{baseUrl}}/ventas
 Content-Type: application/json
 
 {
   "cliente_id": "CLI001",
-  "direccion_envio": "Calle 100 # 15-30",
+  "direccion_envio": "Calle 100 # 15-30, Bogota",
   "detalles": [
-    { "producto_id": "PROD001", "cantidad": 2 }
+    { "producto_id": "PROD001", "cantidad": 2 },
+    { "producto_id": "PROD002", "cantidad": 1 }
   ]
+}
+
+### Registrar venta (formato simple)
+POST {{baseUrl}}/ventas
+Content-Type: application/json
+
+{
+  "cliente_id": "CLI001",
+  "direccion_envio": "Carrera 43A # 1-50, Medellin",
+  "producto_id": "PROD003",
+  "cantidad": 1
 }
