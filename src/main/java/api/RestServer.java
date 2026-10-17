@@ -29,6 +29,10 @@ public class RestServer {
         this.server.createContext("/api/pedidos", new PedidoHandler(ventaController));
         this.server.createContext("/api/ventas", new VentaHandler(ventaController));
 
+        SwaggerHandler swaggerHandler = new SwaggerHandler();
+        this.server.createContext("/swagger", swaggerHandler);
+        this.server.createContext("/api-docs", swaggerHandler);
+
         this.server.setExecutor(null);
     }
 
@@ -57,6 +61,8 @@ public class RestServer {
         System.out.println("    - Clientes:   http://localhost:" + port + "/api/clientes");
         System.out.println("    - Pedidos:    http://localhost:" + port + "/api/pedidos");
         System.out.println("    - Ventas:     http://localhost:" + port + "/api/ventas");
+        System.out.println("    - Swagger UI: http://localhost:" + port + "/swagger");
+        System.out.println("    - OpenAPI:    http://localhost:" + port + "/api-docs/openapi.yaml");
     }
 
     public void stop() {
