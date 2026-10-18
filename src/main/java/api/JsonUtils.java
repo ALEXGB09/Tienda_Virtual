@@ -2,7 +2,6 @@ package api;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,11 +12,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import exception.ValidationException;
-import model.Cliente;
-import model.Pedido;
-import model.Producto;
-import model.Stock;
 
+/**
+ * Utilidades centralizadas de serialización / deserialización JSON usando Jackson.
+ * Todos los handlers deben usar esta clase en lugar de procesar JSON manualmente.
+ */
 public class JsonUtils {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -28,10 +27,19 @@ public class JsonUtils {
         MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
+    private JsonUtils() {
+        // Clase utilitaria, no instanciar
+    }
+
+    /** Devuelve el ObjectMapper configurado para uso avanzado. */
     public static ObjectMapper getObjectMapper() {
         return MAPPER;
     }
 
+    /**
+     * Serializa cualquier objeto Java a una cadena JSON.
+     * Lanza {@link RuntimeException} si la serialización falla.
+     */
     public static String toJson(Object obj) {
         if (obj == null) {
             return "null";
@@ -43,6 +51,10 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * Deserializa una cadena JSON en una instancia de la clase indicada.
+     * Lanza {@link ValidationException} (400) si el JSON está mal formado.
+     */
     public static <T> T fromJson(String json, Class<T> clazz) {
         if (json == null || json.trim().isEmpty()) {
             throw new ValidationException("El cuerpo JSON no puede estar vacío.");
@@ -54,6 +66,10 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * Parsea una cadena JSON y devuelve un {@link JsonNode} para inspección dinámica de campos.
+     * Lanza {@link ValidationException} (400) si el JSON está mal formado.
+     */
     public static JsonNode parseTree(String json) {
         if (json == null || json.trim().isEmpty()) {
             throw new ValidationException("El cuerpo JSON no puede estar vacío.");
@@ -65,6 +81,10 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * Parsea un JSON plano (solo campos de primer nivel con valores escalares)
+     * y lo retorna como un mapa de cadenas. Útil para cuerpos simples.
+     */
     public static Map<String, String> parseJsonSimple(String json) {
         Map<String, String> map = new HashMap<>();
         if (json == null || json.trim().isEmpty()) {
@@ -81,48 +101,16 @@ public class JsonUtils {
             Map.Entry<String, JsonNode> entry = fields.next();
             JsonNode val = entry.getValue();
             if (val != null && !val.isNull()) {
-                if (val.isValueNode()) {
-                    map.put(entry.getKey(), val.asText());
-                } else {
-                    map.put(entry.getKey(), val.toString());
-                }
+                map.put(entry.getKey(), val.isValueNode() ? val.asText() : val.toString());
             }
         }
         return map;
     }
 
-    public static String toJsonProducto(Producto p) {
-        return toJson(p);
-    }
-
-    public static String toJsonProductos(List<Producto> lista) {
-        return toJson(lista);
-    }
-
-    public static String toJsonStock(Stock s) {
-        return toJson(s);
-    }
-
-    public static String toJsonStocks(List<Stock> lista) {
-        return toJson(lista);
-    }
-
-    public static String toJsonCliente(Cliente c) {
-        return toJson(c);
-    }
-
-    public static String toJsonClientes(List<Cliente> lista) {
-        return toJson(lista);
-    }
-
-    public static String toJsonPedido(Pedido p) {
-        return toJson(p);
-    }
-
-    public static String toJsonPedidos(List<Pedido> lista) {
-        return toJson(lista);
-    }
-
+    /**
+     * Crea un JSON simple de una clave-valor de tipo String.
+     * Útil para mensajes de respuesta como {@code {"mensaje": "..."} }.
+     */
     public static String toJsonMessage(String key, String value) {
         Map<String, String> map = new HashMap<>();
         map.put(key, value);

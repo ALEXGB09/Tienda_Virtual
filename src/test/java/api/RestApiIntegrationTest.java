@@ -270,4 +270,43 @@ public class RestApiIntegrationTest {
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("openapi: 3.0.3"));
     }
+
+    @Test
+    public void testDeleteProducto() throws Exception {
+        // Primero crear el producto a eliminar
+        String jsonCreate = """
+            {
+                "producto_id": "PROD_TO_DELETE",
+                "nombre": "Producto Temporal",
+                "descripcion": "Para prueba de eliminacion",
+                "precio_base": 10000.0,
+                "cantidad_inicial": 5,
+                "stock_minimo": 1
+            }
+            """;
+        HttpRequest createRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/productos"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonCreate))
+                .build();
+        client.send(createRequest, HttpResponse.BodyHandlers.ofString());
+
+        // Eliminar: debe retornar 204 No Content
+        HttpRequest deleteRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/productos?id=PROD_TO_DELETE"))
+                .DELETE()
+                .build();
+        HttpResponse<String> response = client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(204, response.statusCode());
+    }
+
+    @Test
+    public void testDeleteProductoInexistente() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/productos?id=PROD_NO_EXISTE_JAMAS"))
+                .DELETE()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(404, response.statusCode());
+    }
 }

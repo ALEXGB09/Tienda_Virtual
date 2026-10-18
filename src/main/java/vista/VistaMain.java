@@ -184,10 +184,12 @@ public class VistaMain {
             System.out.print("ID del cliente (ej: CLI001): ");
             String clienteId = scan.nextLine().trim();
 
-            Cliente cliente = clienteController.buscarCliente(clienteId);
-            if (cliente == null) {
+            // buscarCliente lanza ResourceNotFoundException si no existe; capturamos para auto-registro
+            try {
+                clienteController.buscarCliente(clienteId);
+            } catch (Exception e) {
                 System.out.println("Cliente no registrado. Registrando cliente de forma automática...");
-                cliente = new Cliente(clienteId, "Cliente", "Invitado", clienteId + "@tienda.com", "0000000", "2026-09-25");
+                Cliente cliente = new Cliente(clienteId, "Cliente", "Invitado", clienteId + "@tienda.com", "0000000", "2026-09-25");
                 clienteController.registrarCliente(cliente);
             }
 

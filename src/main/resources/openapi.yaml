@@ -117,12 +117,8 @@ paths:
             type: string
             example: PROD010
       responses:
-        '200':
-          description: Producto eliminado exitosamente
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MensajeResponse'
+        '204':
+          description: Producto eliminado exitosamente (sin cuerpo de respuesta)
         '400':
           description: Falta el parámetro ID
           content:

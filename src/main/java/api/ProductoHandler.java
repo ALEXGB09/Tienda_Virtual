@@ -109,10 +109,8 @@ public class ProductoHandler extends BaseHandler {
                 }
 
                 productoController.eliminarProducto(idParam);
-
-                Map<String, String> response = new HashMap<>();
-                response.put("mensaje", "Producto " + idParam + " eliminado exitosamente.");
-                sendJson(exchange, 200, response);
+                // 204 No Content: eliminación exitosa sin cuerpo de respuesta
+                sendEmpty(exchange, 204);
                 break;
             }
 
