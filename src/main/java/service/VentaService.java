@@ -134,7 +134,8 @@ public class VentaService {
         // Ejecutar transacción atómica: guardar pedido, detalles y descontar stock
         boolean guardado = pedidoDAO.insertarPedidoConDetalles(pedido);
         if (!guardado) {
-            throw new Exception("Error al persistir la transacción de la venta.");
+            // No exponer detalles internos de la capa de datos al cliente
+            throw new RuntimeException("No fue posible persistir la venta. Inténtelo de nuevo.");
         }
 
         return pedido;

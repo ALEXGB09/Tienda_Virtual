@@ -12,6 +12,8 @@ target/
 .settings/
 .classpath
 .project
+classpath.txt
+*.tmp
 
 # Sistema operativo
 .DS_Store
