@@ -12,9 +12,10 @@ import data_access.dao.ClienteDAO;
 import data_access.dao.PedidoDAO;
 import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
-import data_access.impl.ClienteDAOJdbc;
+import data_access.impl.ClienteDAOJpa;
+import data_access.impl.PedidoDAOJpa;
+import data_access.jpa.JPAUtil;
 import data_access.impl.MemoryDAOFactory;
-import data_access.impl.PedidoDAOJdbc;
 import data_access.impl.ProductoDAOJdbc;
 import data_access.impl.StockDAOJdbc;
 import model.Cliente;
@@ -41,8 +42,8 @@ public class VistaMain {
         try {
             productoDAO = new ProductoDAOJdbc();
             stockDAO = new StockDAOJdbc();
-            clienteDAO = new ClienteDAOJdbc();
-            pedidoDAO = new PedidoDAOJdbc();
+            clienteDAO = new ClienteDAOJpa();
+            pedidoDAO = new PedidoDAOJpa();
 
             productoController = new ProductoController(productoDAO, stockDAO);
             stockController = new StockController(stockDAO);
@@ -79,6 +80,7 @@ public class VistaMain {
                 case 6:
                     System.out.println("Cerrando la aplicación...");
                     restServer.stop();
+                    JPAUtil.cerrar();
                     break;
                 default:
                     System.out.println("Opción no válida.");

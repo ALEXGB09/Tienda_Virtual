@@ -24,7 +24,12 @@
             <version>13.2.1.jre11</version>
             <scope>runtime</scope>
         </dependency>
-
+<!-- JPA con Hibernate para persistencia de clientes y pedidos -->
+    <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>6.6.15.Final</version>
+    </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
