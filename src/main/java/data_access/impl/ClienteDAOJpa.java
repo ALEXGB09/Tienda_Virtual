@@ -59,10 +59,14 @@ public class ClienteDAOJpa implements ClienteDAO {
 
         } catch (Exception e) {
             if (tx.isActive()) {
-                tx.rollback();
+                try {
+                    tx.rollback();
+                } catch (RuntimeException rollbackException) {
+                    e.addSuppressed(rollbackException);
+                }
             }
-            throw e;
 
+            throw e;
         } finally {
             em.close();
         }
