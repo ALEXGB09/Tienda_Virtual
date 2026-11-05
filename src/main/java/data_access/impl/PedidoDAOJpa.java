@@ -96,11 +96,16 @@ public class PedidoDAOJpa implements PedidoDAO {
                     detalleJpa.setDetalleId(detalle.getDetalle_id());
                     detalleJpa.setPedido(entidad);
 
-                    ProductoJpa producto = em.getReference(
-                            ProductoJpa.class,
-                            detalle.getProducto_id()
-                    );
+                ProductoJpa producto = em.find(
+                    ProductoJpa.class,
+                    detalle.getProducto_id()
+                );
 
+                if (producto == null) {
+                    throw new IllegalArgumentException(
+                        "No existe el producto: " + detalle.getProducto_id()
+                    );
+                }
                     detalleJpa.setProducto(producto);
                     detalleJpa.setCantidad(detalle.getCantidad());
                     detalleJpa.setPrecioUnitario(

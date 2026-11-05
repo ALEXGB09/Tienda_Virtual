@@ -69,49 +69,93 @@ public class MemoryDAOFactory {
     }
 
     public static StockDAO getStockDAO() {
-        return new StockDAO() {
-            @Override
-            public List<Stock> obtenerTodos() { return new ArrayList<>(stockDB); }
+    return new StockDAO() {
+        @Override
+        public List<Stock> obtenerTodos() {
+            return new ArrayList<>(stockDB);
+        }
 
-            @Override
-            public Stock obtenerPorProductoId(String productoId) {
-                for (Stock s : stockDB) {
-                    if (s.getProducto_id().equalsIgnoreCase(productoId)) return s;
+        @Override
+        public Stock obtenerPorProductoId(String productoId) {
+            for (Stock s : stockDB) {
+                if (s.getProducto_id().equalsIgnoreCase(productoId)) {
+                    return s;
                 }
-                return null;
             }
+            return null;
+        }
 
-            @Override
-            public boolean insertar(Stock s) { stockDB.add(s); return true; }
+        @Override
+        public boolean insertar(Stock s) {
+            stockDB.add(s);
+            return true;
+        }
 
-            @Override
-            public boolean actualizarCantidad(String productoId, int nuevaCantidad, String fecha) {
-                Stock s = obtenerPorProductoId(productoId);
-                if (s != null) {
-                    s.setCantidad_disponible(nuevaCantidad);
-                    s.setUltima_actualizacion(fecha);
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean descontarCantidad(String productoId, int cantidadADescontar, String fecha) throws Exception {
-                Stock s = obtenerPorProductoId(productoId);
-                if (s == null || s.getCantidad_disponible() < cantidadADescontar) {
-                    throw new Exception("Inventario insuficiente para el producto: " + productoId);
-                }
-                s.setCantidad_disponible(s.getCantidad_disponible() - cantidadADescontar);
+        @Override
+        public boolean actualizarCantidad(String productoId, int nuevaCantidad, String fecha) {
+            Stock s = obtenerPorProductoId(productoId);
+            if (s != null) {
+                s.setCantidad_disponible(nuevaCantidad);
                 s.setUltima_actualizacion(fecha);
                 return true;
             }
+            return false;
+        }
 
-            @Override
-            public boolean eliminarPorProductoId(String productoId) {
-                return stockDB.removeIf(s -> s.getProducto_id().equalsIgnoreCase(productoId));
+        @Override
+        public boolean descontarCantidad(String productoId, int cantidadADescontar, String fecha) throws Exception {
+            if (cantidadADescontar <= 0) {
+                throw new IllegalArgumentException(
+                        "La cantidad a descontar debe ser mayor que cero."
+                );
             }
-        };
-    }
+
+            Stock s = obtenerPorProductoId(productoId);
+
+            if (s == null || s.getCantidad_disponible() < cantidadADescontar) {
+                throw new Exception("Inventario insuficiente para el producto: " + productoId);
+            }
+
+            s.setCantidad_disponible(s.getCantidad_disponible() - cantidadADescontar);
+            s.setUltima_actualizacion(fecha);
+            return true;
+        }
+
+        // NUEVO MÉTODO: permite devolver al inventario una cantidad descontada.
+        @Override
+        public boolean incrementarCantidad(
+                String productoId,
+                int cantidadAIncrementar,
+                String fecha) throws Exception {
+
+            if (cantidadAIncrementar <= 0) {
+                throw new IllegalArgumentException(
+                        "La cantidad a incrementar debe ser mayor que cero."
+                );
+            }
+
+            Stock s = obtenerPorProductoId(productoId);
+
+            if (s == null) {
+                throw new Exception(
+                        "No existe inventario para el producto: " + productoId
+                );
+            }
+
+            s.setCantidad_disponible(
+                    s.getCantidad_disponible() + cantidadAIncrementar
+            );
+            s.setUltima_actualizacion(fecha);
+
+            return true;
+        }
+
+        @Override
+        public boolean eliminarPorProductoId(String productoId) {
+            return stockDB.removeIf(s -> s.getProducto_id().equalsIgnoreCase(productoId));
+        }
+    };
+}
 
     public static ClienteDAO getClienteDAO() {
         return new ClienteDAO() {
@@ -132,52 +176,31 @@ public class MemoryDAOFactory {
     }
 
     public static PedidoDAO getPedidoDAO() {
-        return new PedidoDAO() {
-            @Override
-            public List<Pedido> obtenerTodos() { return new ArrayList<>(pedidosDB); }
+    return new PedidoDAO() {
+        @Override
+        public List<Pedido> obtenerTodos() {
+            return new ArrayList<>(pedidosDB);
+        }
 
-            @Override
-            public Pedido obtenerPorId(String id) {
-                for (Pedido p : pedidosDB) {
-                    if (p.getPedido_id().equalsIgnoreCase(id)) return p;
-                }
-                return null;
-            }
-
-            @Override
-            public boolean insertarPedidoConDetalles(Pedido p) throws Exception {
-                synchronized (MemoryDAOFactory.class) {
-                    // 1. Validar que todos los items existan y tengan stock suficiente
-                    for (DetallePedido d : p.getDetalles()) {
-                        Stock s = null;
-                        for (Stock stock : stockDB) {
-                            if (stock.getProducto_id().equalsIgnoreCase(d.getProducto_id())) {
-                                s = stock;
-                                break;
-                            }
-                        }
-                        if (s == null || s.getCantidad_disponible() < d.getCantidad()) {
-                            throw new Exception("Inventario insuficiente o producto inexistente: " + d.getProducto_id());
-                        }
-                    }
-
-                    // 2. Descontar stock
-                    String now = p.getFecha_pedido();
-                    for (DetallePedido d : p.getDetalles()) {
-                        for (Stock stock : stockDB) {
-                            if (stock.getProducto_id().equalsIgnoreCase(d.getProducto_id())) {
-                                stock.setCantidad_disponible(stock.getCantidad_disponible() - d.getCantidad());
-                                stock.setUltima_actualizacion(now);
-                                break;
-                            }
-                        }
-                    }
-
-                    // 3. Registrar pedido
-                    pedidosDB.add(p);
-                    return true;
+        @Override
+        public Pedido obtenerPorId(String id) {
+            for (Pedido p : pedidosDB) {
+                if (p.getPedido_id().equalsIgnoreCase(id)) {
+                    return p;
                 }
             }
+            return null;
+        }
+
+        // MODIFICADO: ahora solamente registra el pedido.
+        // El descuento del inventario será responsabilidad de VentaService.
+        @Override
+        public boolean insertarPedidoConDetalles(Pedido p) throws Exception {
+            synchronized (MemoryDAOFactory.class) {
+                pedidosDB.add(p);
+                return true;
+            }
+        }
         };
     }
 
