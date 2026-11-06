@@ -78,7 +78,7 @@ public class VistaMain {
                     listarVentas();
                     break;
                 case 6:
-                    System.out.println("Cerrando la aplicación...");
+                    System.out.println("Cerrando la aplicación");
                     restServer.stop();
                     break;
                 default:
@@ -89,12 +89,12 @@ public class VistaMain {
 
     private static byte menu() {
         System.out.println("\nTIENDA VIRTUAL ");
-        System.out.println("1. Listar catálogo de productos");
+        System.out.println("1. Mostrar catálogo de productos");
         System.out.println("2. Registrar nuevo producto");
         System.out.println("3. Consultar inventario disponible");
-        System.out.println("4. Realizar una venta (descuenta inventario automáticamente)");
+        System.out.println("4. Realizar una venta");
         System.out.println("5. Ver historial de ventas");
-        System.out.println("6. Salir");
+        System.out.println("6. Salir de la tienda");
         System.out.print("Seleccione una opción: ");
         try {
             byte opc = scan.nextByte();
@@ -126,7 +126,7 @@ public class VistaMain {
     }
 
     private static void registrarProducto() {
-        System.out.println("\n--- REGISTRAR NUEVO PRODUCTO ---");
+        System.out.println("\nREGISTRAR NUEVO PRODUCTO");
         try {
             System.out.print("ID del producto (ej: PROD005): ");
             String id = scan.nextLine().trim();
@@ -137,7 +137,7 @@ public class VistaMain {
             System.out.print("Descripción: ");
             String desc = scan.nextLine().trim();
 
-            System.out.print("Precio base ($): ");
+            System.out.print("Precio base: ");
             double precio = scan.nextDouble();
 
             System.out.print("Cantidad inicial disponible: ");
@@ -149,7 +149,7 @@ public class VistaMain {
 
             Producto p = new Producto(id, nombre, desc, precio, true);
             if (productoController.crearProducto(p, cantidad, minimo)) {
-                System.out.println("¡Producto guardado exitosamente en el catálogo e inventario!");
+                System.out.println("Producto guardado exitosamente en el catálogo e inventario");
             }
         } catch (Exception e) {
             System.out.println("Error al registrar producto: " + e.getMessage());
@@ -180,12 +180,11 @@ public class VistaMain {
     }
 
     private static void procesarVenta() {
-        System.out.println("\n--- REGISTRO DE VENTA ---");
+        System.out.println("\nREGISTRO DE VENTA");
         try {
             System.out.print("ID del cliente (ej: CLI001): ");
             String clienteId = scan.nextLine().trim();
 
-            // buscarCliente lanza ResourceNotFoundException si no existe; capturamos para auto-registro
             try {
                 clienteController.buscarCliente(clienteId);
             } catch (Exception e) {
@@ -209,7 +208,7 @@ public class VistaMain {
 
             Pedido pedido = ventaController.procesarVenta(clienteId, dirEnvio, detalles);
 
-            System.out.println("\n¡VENTA REGISTRADA EXITOSAMENTE!");
+            System.out.println("\nVENTA REGISTRADA EXITOSAMENTE");
             System.out.println("ID Pedido:     " + pedido.getPedido_id());
             System.out.println("Monto Total:   $" + pedido.getMonto_total());
             System.out.println("Estado Venta:  " + pedido.getEstado());
@@ -221,7 +220,7 @@ public class VistaMain {
     }
 
     private static void listarVentas() {
-        System.out.println("\n--- HISTORIAL DE VENTAS ---");
+        System.out.println("\n HISTORIAL DE VENTAS");
         try {
             List<Pedido> pedidos = ventaController.listarVentas();
             if (pedidos.isEmpty()) {
