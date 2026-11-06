@@ -39,16 +39,16 @@ public class ClienteHandler extends BaseHandler {
                 JsonNode json = JsonUtils.parseTree(body);
 
                 if (!json.hasNonNull("cliente_id") || json.get("cliente_id").asText().trim().isEmpty()) {
-                    throw new ValidationException("El campo 'cliente_id' es obligatorio.");
+                    throw new ValidationException("la informacion 'cliente_id' es obligatorio.");
                 }
                 if (!json.hasNonNull("nombre") || json.get("nombre").asText().trim().isEmpty()) {
-                    throw new ValidationException("El campo 'nombre' es obligatorio.");
+                    throw new ValidationException("la informacion 'nombre' es obligatorio.");
                 }
                 if (!json.hasNonNull("apellido") || json.get("apellido").asText().trim().isEmpty()) {
-                    throw new ValidationException("El campo 'apellido' es obligatorio.");
+                    throw new ValidationException("la informacion 'apellido' es obligatorio.");
                 }
                 if (!json.hasNonNull("email") || json.get("email").asText().trim().isEmpty()) {
-                    throw new ValidationException("El campo 'email' es obligatorio.");
+                    throw new ValidationException("la informacion 'email' es obligatorio.");
                 }
 
                 String id = json.get("cliente_id").asText().trim();

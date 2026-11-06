@@ -79,7 +79,7 @@ public class ProductoHandler extends BaseHandler {
 
                 String id = json.hasNonNull("producto_id") ? json.get("producto_id").asText().trim() : idParam;
                 if (id == null || id.trim().isEmpty()) {
-                    throw new ValidationException("Se requiere especificar el ID del producto (en query param 'id' o en el cuerpo).");
+                    throw new ValidationException("Se requiere especificar el ID del producto 'id' .");
                 }
 
                 String nombre = json.hasNonNull("nombre") ? json.get("nombre").asText().trim() : null;
@@ -105,7 +105,7 @@ public class ProductoHandler extends BaseHandler {
 
             case "DELETE": {
                 if (idParam == null || idParam.trim().isEmpty()) {
-                    throw new ValidationException("Se requiere especificar el parámetro 'id' para eliminar el producto.");
+                    throw new ValidationException("Se requiere especificar el 'id' para eliminar el producto.");
                 }
 
                 productoController.eliminarProducto(idParam);

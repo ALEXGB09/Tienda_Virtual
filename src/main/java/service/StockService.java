@@ -39,7 +39,7 @@ public class StockService {
             throw new ValidationException("El ID del producto no puede estar vacío.");
         }
         if (nuevaCantidad < 0) {
-            throw new ValidationException("La cantidad de inventario no puede ser negativa.");
+            throw new ValidationException("La cantidad de inventario no puede ser negativa, es incorrecto.");
         }
 
         String idLimpio = productoId.trim();
