@@ -131,7 +131,6 @@ public class VentaService {
             pedido.getDetalles().add(item);
         }
 
-        // Ejecutar transacción atómica: guardar pedido, detalles y descontar stock
         boolean guardado = pedidoDAO.insertarPedidoConDetalles(pedido);
         if (!guardado) {
             // No exponer detalles internos de la capa de datos al cliente

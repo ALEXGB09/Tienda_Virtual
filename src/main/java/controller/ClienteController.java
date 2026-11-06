@@ -1,7 +1,6 @@
 package controller;
 
 import java.util.List;
-import data_access.dao.ClienteDAO;
 import model.Cliente;
 import service.ClienteService;
 
@@ -10,10 +9,6 @@ public class ClienteController {
 
     public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
-    }
-
-    public ClienteController(ClienteDAO clienteDAO) {
-        this(new ClienteService(clienteDAO));
     }
 
     public List<Cliente> listarClientes() throws Exception {

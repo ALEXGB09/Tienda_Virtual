@@ -28,10 +28,9 @@ public class JsonUtils {
     }
 
     private JsonUtils() {
-        // Clase utilitaria, no instanciar
+    
     }
 
-    /** Devuelve el ObjectMapper configurado para uso avanzado. */
     public static ObjectMapper getObjectMapper() {
         return MAPPER;
     }
@@ -81,10 +80,7 @@ public class JsonUtils {
         }
     }
 
-    /**
-     * Parsea un JSON plano (solo campos de primer nivel con valores escalares)
-     * y lo retorna como un mapa de cadenas. Útil para cuerpos simples.
-     */
+    
     public static Map<String, String> parseJsonSimple(String json) {
         Map<String, String> map = new HashMap<>();
         if (json == null || json.trim().isEmpty()) {

@@ -4,7 +4,10 @@ import java.util.List;
 import model.Cliente;
 
 public interface ClienteDAO {
-    List<Cliente> obtenerTodos() throws Exception;
-    Cliente obtenerPorId(String id) throws Exception;
-    boolean insertar(Cliente cliente) throws Exception;
+
+    List<Cliente> obtenerTodos();
+
+    Cliente obtenerPorId(String id);
+
+    boolean insertar(Cliente cliente);
 }

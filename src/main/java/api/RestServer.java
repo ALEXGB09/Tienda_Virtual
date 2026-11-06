@@ -10,6 +10,7 @@ import data_access.dao.ClienteDAO;
 import data_access.dao.PedidoDAO;
 import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
+import service.ClienteService;
 
 public class RestServer {
     private HttpServer server;
@@ -44,7 +45,7 @@ public class RestServer {
         this(port,
              new ProductoController(productoDAO, stockDAO),
              new StockController(stockDAO),
-             new ClienteController(clienteDAO),
+             new ClienteController(new ClienteService(clienteDAO)),
              new VentaController(pedidoDAO, stockDAO, productoDAO, clienteDAO));
     }
 

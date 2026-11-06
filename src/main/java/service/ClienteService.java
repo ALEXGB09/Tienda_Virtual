@@ -16,15 +16,18 @@ public class ClienteService {
     public ClienteService(ClienteDAO clienteDAO) {
         this.clienteDAO = clienteDAO;
     }
+    private boolean estaVacio(String valor) {
+        return valor == null || valor.trim().isEmpty();
+    }
 
-    public List<Cliente> listarClientes() throws Exception {
+    public List<Cliente> listarClientes() {
         return clienteDAO.obtenerTodos();
     }
 
-    public Cliente buscarCliente(String clienteId) throws Exception {
-        if (clienteId == null || clienteId.trim().isEmpty()) {
-            throw new ValidationException("El ID del cliente no puede estar vacío.");
-        }
+    public Cliente buscarCliente(String clienteId) {
+    if (estaVacio(clienteId)) {
+        throw new ValidationException("El ID del cliente no puede estar vacío.");
+    }
 
         Cliente cliente = clienteDAO.obtenerPorId(clienteId.trim());
         if (cliente == null) {
@@ -33,33 +36,32 @@ public class ClienteService {
         return cliente;
     }
 
-    public boolean registrarCliente(Cliente cliente) throws Exception {
+    public boolean registrarCliente(Cliente cliente)  {
         if (cliente == null) {
             throw new ValidationException("Los datos del cliente no pueden ser nulos.");
         }
 
-        if (cliente.getCliente_id() == null || cliente.getCliente_id().trim().isEmpty()) {
-            throw new ValidationException("El ID del cliente es obligatorio.");
+        if (estaVacio(cliente.getCliente_id())) {
+    throw new ValidationException("El ID del cliente es obligatorio.");
         }
 
-        if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty()) {
-            throw new ValidationException("El nombre del cliente es obligatorio.");
+        if (estaVacio(cliente.getNombre())) {
+    throw new ValidationException("El nombre del cliente es obligatorio.");
         }
 
-        if (cliente.getApellido() == null || cliente.getApellido().trim().isEmpty()) {
-            throw new ValidationException("El apellido del cliente es obligatorio.");
+        if (estaVacio(cliente.getApellido())) {
+    throw new ValidationException("El apellido del cliente es obligatorio.");
+    }
+
+        if (estaVacio(cliente.getEmail()) || !cliente.getEmail().contains("@")) {
+    throw new ValidationException("Se requiere una dirección de correo electrónico válida.");
+    }
+
+        String idCliente = cliente.getCliente_id().trim();
+        if (clienteDAO.obtenerPorId(idCliente) != null) {
+            throw new ConflictException("Ya existe un cliente con el ID: " + idCliente);
         }
 
-        if (cliente.getEmail() == null || !cliente.getEmail().contains("@")) {
-            throw new ValidationException("Se requiere una dirección de correo electrónico válida.");
-        }
-
-        String idLimpio = cliente.getCliente_id().trim();
-        if (clienteDAO.obtenerPorId(idLimpio) != null) {
-            throw new ConflictException("Ya existe un cliente con el ID: " + idLimpio);
-        }
-
-        // Validar unicidad de email
         for (Cliente existente : clienteDAO.obtenerTodos()) {
             if (existente.getEmail() != null && existente.getEmail().equalsIgnoreCase(cliente.getEmail().trim())) {
                 throw new ConflictException("Ya existe un cliente registrado con el correo: " + cliente.getEmail());
@@ -70,7 +72,7 @@ public class ClienteService {
             cliente.setFecha_registro(LocalDate.now().toString());
         }
 
-        cliente.setCliente_id(idLimpio);
+        cliente.setCliente_id(idCliente);
         cliente.setNombre(cliente.getNombre().trim());
         cliente.setApellido(cliente.getApellido().trim());
         cliente.setEmail(cliente.getEmail().trim());
