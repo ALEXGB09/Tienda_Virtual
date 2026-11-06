@@ -138,6 +138,18 @@ public class RestApiIntegrationTest {
     }
 
     @Test
+    public void testGetStockPorProductoId() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/stock?producto_id=PROD001"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("PROD001"));
+    }
+
+    @Test
     public void testPutStock() throws Exception {
         String json = """
             {
@@ -154,6 +166,7 @@ public class RestApiIntegrationTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("actualizado"));
     }
 
     @Test
@@ -166,6 +179,18 @@ public class RestApiIntegrationTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("CLI001"));
+    }
+
+    @Test
+    public void testGetClientePorId() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/clientes?id=CLI001"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("Alexis"));
     }
 
     @Test
@@ -202,6 +227,17 @@ public class RestApiIntegrationTest {
     }
 
     @Test
+    public void testGetVentas() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/ventas"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+    }
+
+    @Test
     public void testPostVentaExitosa() throws Exception {
         String json = """
             {
@@ -210,6 +246,28 @@ public class RestApiIntegrationTest {
                 "detalles": [
                     { "producto_id": "PROD002", "cantidad": 2 }
                 ]
+            }
+            """;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/api/ventas"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(201, response.statusCode());
+        assertTrue(response.body().contains("PED_"));
+    }
+
+    @Test
+    public void testPostVentaFormatoSimple() throws Exception {
+        String json = """
+            {
+                "cliente_id": "CLI001",
+                "direccion_envio": "Calle 45 # 13-20",
+                "producto_id": "PROD003",
+                "cantidad": 1
             }
             """;
 
