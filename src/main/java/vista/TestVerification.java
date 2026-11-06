@@ -16,6 +16,7 @@ import model.DetallePedido;
 import model.Pedido;
 import model.Producto;
 import model.Stock;
+import service.ClienteService;
 
 public class TestVerification {
 
@@ -30,7 +31,7 @@ public class TestVerification {
 
             ProductoController productoCtrl = new ProductoController(productoDAO, stockDAO);
             StockController stockCtrl = new StockController(stockDAO);
-            ClienteController clienteCtrl = new ClienteController(clienteDAO);
+            ClienteController clienteCtrl = new ClienteController(new ClienteService(clienteDAO));
             VentaController ventaCtrl = new VentaController(pedidoDAO, stockDAO, productoDAO, clienteDAO);
 
             RestServer restServer = new RestServer(8085, productoDAO, stockDAO, clienteDAO, pedidoDAO);

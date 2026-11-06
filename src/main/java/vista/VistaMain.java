@@ -22,6 +22,7 @@ import model.DetallePedido;
 import model.Pedido;
 import model.Producto;
 import model.Stock;
+import service.ClienteService;
 
 public class VistaMain {
 
@@ -46,7 +47,7 @@ public class VistaMain {
 
             productoController = new ProductoController(productoDAO, stockDAO);
             stockController = new StockController(stockDAO);
-            clienteController = new ClienteController(clienteDAO);
+            clienteController = new ClienteController(new ClienteService(clienteDAO));
             ventaController = new VentaController(pedidoDAO, stockDAO, productoDAO, clienteDAO);
 
             restServer = new RestServer(8080, productoDAO, stockDAO, clienteDAO, pedidoDAO);
