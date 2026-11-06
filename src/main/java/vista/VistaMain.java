@@ -87,7 +87,7 @@ public class VistaMain {
     }
 
     private static byte menu() {
-        System.out.println("\n--- TIENDA VIRTUAL ---");
+        System.out.println("\nTIENDA VIRTUAL ");
         System.out.println("1. Listar catálogo de productos");
         System.out.println("2. Registrar nuevo producto");
         System.out.println("3. Consultar inventario disponible");
@@ -106,7 +106,7 @@ public class VistaMain {
     }
 
     private static void listarProductos() {
-        System.out.println("\n--- CATÁLOGO DE PRODUCTOS ---");
+        System.out.println("\nCATÁLOGO DE PRODUCTOS ");
         try {
             List<Producto> lista = productoController.listarProductos();
             if (lista.isEmpty()) {
@@ -157,7 +157,7 @@ public class VistaMain {
     }
 
     private static void consultarStock() {
-        System.out.println("\n--- INVENTARIO DISPONIBLE ---");
+        System.out.println("\nINVENTARIO DISPONIBLE ");
         try {
             List<Stock> stockList = stockController.listarStock();
             if (stockList.isEmpty()) {
