@@ -1,5 +1,6 @@
 package vista;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -12,9 +13,8 @@ import data_access.dao.ClienteDAO;
 import data_access.dao.PedidoDAO;
 import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
-import data_access.impl.ClienteDAOJdbc;
-import data_access.impl.MemoryDAOFactory;
-import data_access.impl.PedidoDAOJdbc;
+import data_access.impl.ClienteDAOJpa;
+import data_access.impl.PedidoDAOJpa;
 import data_access.impl.ProductoDAOJdbc;
 import data_access.impl.StockDAOJdbc;
 import model.Cliente;
@@ -22,7 +22,9 @@ import model.DetallePedido;
 import model.Pedido;
 import model.Producto;
 import model.Stock;
+import data_access.jpa.JPAUtil;
 import service.ClienteService;
+import exception.ResourceNotFoundException;
 
 public class VistaMain {
 
@@ -42,8 +44,8 @@ public class VistaMain {
         try {
             productoDAO = new ProductoDAOJdbc();
             stockDAO = new StockDAOJdbc();
-            clienteDAO = new ClienteDAOJdbc();
-            pedidoDAO = new PedidoDAOJdbc();
+            clienteDAO = new ClienteDAOJpa();
+            pedidoDAO = new PedidoDAOJpa();
 
             productoController = new ProductoController(productoDAO, stockDAO);
             stockController = new StockController(stockDAO);
@@ -80,6 +82,7 @@ public class VistaMain {
                 case 6:
                     System.out.println("Cerrando la aplicación");
                     restServer.stop();
+                    JPAUtil.cerrar();
                     break;
                 default:
                     System.out.println("Opción no válida.");
@@ -187,10 +190,20 @@ public class VistaMain {
 
             try {
                 clienteController.buscarCliente(clienteId);
-            } catch (Exception e) {
-                System.out.println("Cliente no registrado. Registrando cliente de forma automática...");
-                Cliente cliente = new Cliente(clienteId, "Cliente", "Invitado", clienteId + "@tienda.com", "0000000", "2026-09-25");
-                clienteController.registrarCliente(cliente);
+            } catch (ResourceNotFoundException e) {
+                System.out.println("El cliente no existe. Registrando cliente automáticamente...");
+
+                Cliente nuevoCliente = new Cliente(
+                    clienteId,
+                    "Cliente",
+                    "Invitado",
+                    clienteId + "@tienda.com",
+                    "0000000",
+                    LocalDate.now().toString()
+                );
+
+                clienteController.registrarCliente(nuevoCliente);
+                System.out.println("Cliente registrado correctamente.");
             }
 
             System.out.print("ID de producto a comprar (ej: PROD001): ");

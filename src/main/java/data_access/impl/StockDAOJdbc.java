@@ -91,10 +91,14 @@ public class StockDAOJdbc implements StockDAO {
 
     @Override
     public boolean descontarCantidad(String productoId, int cantidadADescontar, String fechaActualizacion) throws Exception {
+        if (cantidadADescontar <= 0) {
+            throw new IllegalArgumentException("La cantidad a descontar debe ser mayor que cero.");
+        }
+
         String sql = "UPDATE STOCK SET cantidad_disponible = cantidad_disponible - ?, ultima_actualizacion = ? WHERE producto_id = ? AND cantidad_disponible >= ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, cantidadADescontar);
             stmt.setString(2, fechaActualizacion);
@@ -107,6 +111,25 @@ public class StockDAOJdbc implements StockDAO {
             }
             return true;
         }
+    }
+
+    @Override
+public boolean incrementarCantidad(String productoId, int cantidadAIncrementar, String fechaActualizacion) throws Exception {
+    if (cantidadAIncrementar <= 0) {
+        throw new IllegalArgumentException("La cantidad a incrementar debe ser mayor que cero.");
+    }
+
+    String sql = "UPDATE STOCK SET cantidad_disponible = cantidad_disponible + ?, ultima_actualizacion = ? WHERE producto_id = ?";
+
+    try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, cantidadAIncrementar);
+        stmt.setString(2, fechaActualizacion);
+        stmt.setString(3, productoId);
+
+        return stmt.executeUpdate() > 0;
+    }
     }
 
     @Override

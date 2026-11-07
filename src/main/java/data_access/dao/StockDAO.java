@@ -9,5 +9,6 @@ public interface StockDAO {
     boolean insertar(Stock stock) throws Exception;
     boolean actualizarCantidad(String productoId, int nuevaCantidad, String fechaActualizacion) throws Exception;
     boolean descontarCantidad(String productoId, int cantidadADescontar, String fechaActualizacion) throws Exception;
+    boolean incrementarCantidad(String productoId, int cantidadAIncrementar, String fechaActualizacion) throws Exception;
     boolean eliminarPorProductoId(String productoId) throws Exception;
 }
