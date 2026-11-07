@@ -28,6 +28,10 @@ public class ProductoServiceTest {
         productoService = new ProductoService(productoDAO, stockDAO);
     }
 
+    // ==========================================
+    // PRUEBAS: listarProductos
+    // ==========================================
+
     @Test
     public void testListarProductos() throws Exception {
         List<Producto> lista = productoService.listarProductos();
@@ -35,12 +39,23 @@ public class ProductoServiceTest {
         assertTrue(lista.size() >= 4);
     }
 
+    // ==========================================
+    // PRUEBAS: buscarPorId
+    // ==========================================
+
     @Test
     public void testBuscarPorIdExitoso() throws Exception {
         Producto p = productoService.buscarPorId("PROD001");
         assertNotNull(p);
         assertEquals("PROD001", p.getProducto_id());
         assertTrue(p.getPrecio_base() > 0);
+    }
+
+    @Test
+    public void testBuscarPorIdConEspacios() throws Exception {
+        Producto p = productoService.buscarPorId("   PROD001   ");
+        assertNotNull(p);
+        assertEquals("PROD001", p.getProducto_id());
     }
 
     @Test
@@ -58,6 +73,17 @@ public class ProductoServiceTest {
     }
 
     @Test
+    public void testBuscarPorIdNulo() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.buscarPorId(null);
+        });
+    }
+
+    // ==========================================
+    // PRUEBAS: crearProducto
+    // ==========================================
+
+    @Test
     public void testCrearProductoExitoso() throws Exception {
         Producto nuevo = new Producto("PROD_TEST_1", "Mousepad Gamer", "Superficie de tela 90x40", 50000.0, true);
         boolean creado = productoService.crearProducto(nuevo, 15, 2);
@@ -69,10 +95,65 @@ public class ProductoServiceTest {
     }
 
     @Test
+    public void testCrearProductoNulo() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(null, 10, 2);
+        });
+    }
+
+    @Test
+    public void testCrearProductoIdNulo() {
+        Producto nuevo = new Producto(null, "Test", "Desc", 1000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, 10, 2);
+        });
+    }
+
+    @Test
+    public void testCrearProductoIdVacio() {
+        Producto nuevo = new Producto("   ", "Test", "Desc", 1000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, 10, 2);
+        });
+    }
+
+    @Test
+    public void testCrearProductoNombreNulo() {
+        Producto nuevo = new Producto("PROD_TEST_NN", null, "Desc", 1000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, 10, 2);
+        });
+    }
+
+    @Test
+    public void testCrearProductoNombreVacio() {
+        Producto nuevo = new Producto("PROD_TEST_NV", "   ", "Desc", 1000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, 10, 2);
+        });
+    }
+
+    @Test
     public void testCrearProductoPrecioInvalido() {
         Producto nuevo = new Producto("PROD_TEST_2", "Audífonos", "Inalámbricos", -100.0, true);
         assertThrows(ValidationException.class, () -> {
             productoService.crearProducto(nuevo, 5, 1);
+        });
+    }
+
+    @Test
+    public void testCrearProductoCantidadInicialNegativa() {
+        Producto nuevo = new Producto("PROD_TEST_3", "Cámara", "HD", 80000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, -5, 1);
+        });
+    }
+
+    @Test
+    public void testCrearProductoStockMinimoNegativo() {
+        Producto nuevo = new Producto("PROD_TEST_4", "Microfono", "USB", 120000.0, true);
+        assertThrows(ValidationException.class, () -> {
+            productoService.crearProducto(nuevo, 10, -2);
         });
     }
 
@@ -84,6 +165,10 @@ public class ProductoServiceTest {
         });
     }
 
+    // ==========================================
+    // PRUEBAS: actualizarProducto
+    // ==========================================
+
     @Test
     public void testActualizarProductoExitoso() throws Exception {
         boolean actualizado = productoService.actualizarProducto(
@@ -92,7 +177,48 @@ public class ProductoServiceTest {
 
         Producto modificado = productoService.buscarPorId("PROD001");
         assertEquals("Laptop Gaming Modificada", modificado.getNombre());
+        assertEquals("Nueva descripción", modificado.getDescripcion());
         assertEquals(4900000.0, modificado.getPrecio_base());
+    }
+
+    @Test
+    public void testActualizarProductoSoloEstado() throws Exception {
+        boolean actualizado = productoService.actualizarProducto("PROD001", null, null, -1, false);
+        assertTrue(actualizado);
+
+        Producto modificado = productoService.buscarPorId("PROD001");
+        assertFalse(modificado.isEstado_activo());
+        assertEquals("Laptop Gaming Pro 15", modificado.getNombre());
+    }
+
+    @Test
+    public void testActualizarProductoPrecioCero() throws Exception {
+        boolean actualizado = productoService.actualizarProducto("PROD001", null, null, 0.0, null);
+        assertTrue(actualizado);
+
+        Producto modificado = productoService.buscarPorId("PROD001");
+        assertEquals(0.0, modificado.getPrecio_base());
+    }
+
+    @Test
+    public void testActualizarProductoIdNulo() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.actualizarProducto(null, "Nombre", "Desc", 1000.0, true);
+        });
+    }
+
+    @Test
+    public void testActualizarProductoIdVacio() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.actualizarProducto("   ", "Nombre", "Desc", 1000.0, true);
+        });
+    }
+
+    @Test
+    public void testActualizarProductoPrecioNegativoInvalido() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.actualizarProducto("PROD001", "Nombre", "Desc", -5.0, true);
+        });
     }
 
     @Test
@@ -102,6 +228,10 @@ public class ProductoServiceTest {
         });
     }
 
+    // ==========================================
+    // PRUEBAS: eliminarProducto
+    // ==========================================
+
     @Test
     public void testEliminarProductoExitoso() throws Exception {
         boolean eliminado = productoService.eliminarProducto("PROD002");
@@ -109,6 +239,21 @@ public class ProductoServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> {
             productoService.buscarPorId("PROD002");
+        });
+        assertNull(stockDAO.obtenerPorProductoId("PROD002"), "El stock asociado debe eliminarse también");
+    }
+
+    @Test
+    public void testEliminarProductoIdNulo() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.eliminarProducto(null);
+        });
+    }
+
+    @Test
+    public void testEliminarProductoIdVacio() {
+        assertThrows(ValidationException.class, () -> {
+            productoService.eliminarProducto("   ");
         });
     }
 

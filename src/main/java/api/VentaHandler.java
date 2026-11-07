@@ -2,6 +2,7 @@ package api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -22,10 +23,18 @@ public class VentaHandler extends BaseHandler {
     @Override
     protected void doHandle(HttpExchange exchange, String method) throws Exception {
         switch (method) {
-            case "GET":
-                List<Pedido> ventas = ventaController.listarVentas();
-                sendJson(exchange, 200, ventas);
+            case "GET": {
+                Map<String, String> queryParams = parseQueryParams(exchange.getRequestURI().getRawQuery());
+                String idParam = queryParams.get("id");
+                if (idParam != null && !idParam.trim().isEmpty()) {
+                    Pedido venta = ventaController.buscarVentaPorId(idParam);
+                    sendJson(exchange, 200, venta);
+                } else {
+                    List<Pedido> ventas = ventaController.listarVentas();
+                    sendJson(exchange, 200, ventas);
+                }
                 break;
+            }
 
             case "POST": {
                 String body = readBody(exchange);

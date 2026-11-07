@@ -15,6 +15,7 @@ import data_access.dao.ProductoDAO;
 import data_access.dao.StockDAO;
 import data_access.impl.ClienteDAOJpa;
 import data_access.impl.PedidoDAOJpa;
+import data_access.jpa.JPAUtil;
 import data_access.impl.ProductoDAOJdbc;
 import data_access.impl.StockDAOJdbc;
 import model.Cliente;
@@ -22,7 +23,7 @@ import model.DetallePedido;
 import model.Pedido;
 import model.Producto;
 import model.Stock;
-import data_access.jpa.JPAUtil;
+
 import service.ClienteService;
 import exception.ResourceNotFoundException;
 

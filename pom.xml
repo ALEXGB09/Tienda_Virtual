@@ -24,6 +24,7 @@
             <version>13.2.1.jre11</version>
             <scope>runtime</scope>
         </dependency>
+
         
         <!-- JPA con Hibernate para persistencia de clientes y pedidos -->
         <dependency>
